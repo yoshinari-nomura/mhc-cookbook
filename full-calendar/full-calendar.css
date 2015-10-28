@@ -1,0 +1,29 @@
+.mhc-allday {
+  background-color: lightblue;
+  border-color: lightblue;
+  color: black;
+}
+
+.mhc-category-holiday {
+  background-color: orangered;
+  border-color: orangered;
+  color: white;
+}
+
+.mhc-category-birthday {
+  background-color: mistyrose;
+  border-color: mistyrose;
+  color: dimgray;
+}
+
+.mhc-time-range {
+  background-color: transparent;
+  border-color: transparent;
+  color: black;
+}
+
+.mhc-time-range:hover {
+  background-color: lavender;
+  border-color: lavender;
+  color: black;
+}

@@ -1,0 +1,53 @@
+#+TITLE: MHC cookbook
+#+AUTHOR: Yoshinari Nomura
+#+EMAIL:
+#+DATE:
+#+OPTIONS: H:3 num:2 toc:nil
+#+OPTIONS: ^:nil @:t \n:nil ::t |:t f:t TeX:t
+#+OPTIONS: skip:nil
+#+OPTIONS: author:t
+#+OPTIONS: email:nil
+#+OPTIONS: creator:nil
+#+OPTIONS: timestamp:nil
+#+OPTIONS: timestamps:nil
+#+OPTIONS: d:nil
+#+OPTIONS: tags:t
+#+TEXT:
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE: ja
+#+STARTUP: odd
+#+LATEX_CLASS: jsarticle
+#+LATEX_CLASS_OPTIONS: [a4j,dvipdfmx]
+# #+LATEX_HEADER: \usepackage{plain-article}
+# #+LATEX_HEADER: \renewcommand\maketitle{}
+# #+LATEX_HEADER: \pagestyle{empty}
+# #+LaTeX: \thispagestyle{empty}
+
+* FullCalendar viewer for mhc
+
+  In [[file:full-calendar][full-calendar]] directory:
+
+  1) Prepare JSON data with =mhc scan=
+     [[file:full-calendar/update-json.sh][update-json.sh]]:
+     #+BEGIN_SRC shell-script
+       #!/bin/sh
+
+       mhc scan thismonth+6m  --search='category:holiday'   \
+                              --format=json > holidays.json
+       mhc scan thismonth+6m  --search='!category:holiday'  \
+                              --format=json > events.json
+     #+END_SRC
+
+  2) open =full-calendar.html= with a browser
+
+* Forecasting next occurrence of a recurring event
+  Heron is an event forecaster https://github.com/nomlab/heron
+
+  #+BEGIN_SRC shell-script
+    mhc scan all --search='subject:"Group meeting"' | awk '{print $1}' | heron forecast
+    2015-08-17
+
+    mhc scan all --search='recurrence_tag:"HairCut"' | awk '{print $1}' | heron forecast
+    2015-10-10
+  #+END_SRC
