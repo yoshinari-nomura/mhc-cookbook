@@ -51,3 +51,40 @@
     mhc scan all --search='recurrence_tag:"HairCut"' | awk '{print $1}' | heron forecast
     2015-10-10
   #+END_SRC
+
+* Show last-year's schedule at the left buffer.
+  Sometimes, you may want to check the last year's schedule on browsing
+  future schedule. This code would help you.
+
+  Split window horizontally and show two mhc-summary-buffers, then
+  the left buffer follows the right one.
+
+  #+BEGIN_SRC emacs-lisp
+    (defun mhc-summary-get-left-summary-window ()
+      "Return the left mhc-summary buffer of current buffer."
+      (save-window-excursion
+        (let* ((left-win (window-in-direction 'left))
+               (left-buf (window-buffer left-win)))
+          (if (and left-win
+                   (eq (with-current-buffer left-buf major-mode)
+                       'mhc-summary-mode))
+              left-win
+            nil))))
+
+    (defun mhc-summary-set-left-window ()
+      (let ((left-win (mhc-summary-get-left-summary-window))
+            (last-year (mhc-date-yy- (mhc-summary-current-date-month) 1)))
+        (if left-win
+            (with-selected-window left-win
+              (mhc-goto-month last-year)))))
+
+    (add-hook 'mhc-summary-mode-hook 'mhc-summary-set-left-window)
+  #+END_SRC
+
+  How to use it:
+  1) Show the mhc-summary-buffer of current month by =M-x mhc=.
+  2) Split horizontally by =C-x 3=.
+     Yes, you may see the current month in both buffers.
+  3) Set focus at the right-side one.
+  4) Now, moving the month in the right buffer,
+     left buffer follows showing the previous year of the right buffer.
