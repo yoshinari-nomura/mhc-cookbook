@@ -88,3 +88,80 @@
   3) Set focus at the right-side one.
   4) Now, moving the month in the right buffer,
      left buffer follows showing the previous year of the right buffer.
+
+* mhc-sync-all: sync all channels
+  This script hits these commands more interactively:
+  #+BEGIN_SRC sh
+    $ cd  YOUR-MHC-REPOSITORY
+    $ git add .
+    $ git commit -m Update
+    $ mhc sync personal
+    $ mhc sync business
+    $ mhc sync family
+  #+END_SRC
+
+  Channel names personal, business, family are embedded in the shell script.
+  You may want to customize them.
+
+  Before hit the script, you have to do `git init` in YOUR-MHC-REPOSITORY.
+
+  #+BEGIN_SRC sh
+    #!/bin/sh
+
+    print_message () {
+        printf "$@"
+    } >&2
+
+    commit_all() {
+      (
+        cd "$1"
+        git add .
+        git commit -m "Update"
+      )
+    }
+
+    confirm() {
+      print_message "$1 (yes|no) "
+      read yesno
+
+      if [ "$yesno" = "yes" ]; then
+        return 0
+      else
+        return 1
+      fi
+    }
+
+    eval REPOSITORY=$(mhc config general.repository | sed "s!~/!$HOME/!")
+    print_message "Checking $REPOSITORY...\n"
+
+    if [ ! -d "$REPOSITORY" ]; then
+      print_message "Error: repository $REPOSITORY not found.\n"
+      exit 1
+    fi
+
+    GIT_STATUS=$(cd "$REPOSITORY"; git status -s 2>&1)
+
+    if [ -n "$GIT_STATUS" ]; then
+      print_message "Git repository is not clean!!\n$GIT_STATUS\n"
+
+      if ! confirm "Commit everything and proceed?"; then
+        print_message "Aborting...\n"
+        exit 1
+      fi
+      commit_all "$REPOSITORY"
+
+    else
+      print_message "Git repository is clean\n"
+
+      if ! confirm "Proceed?"; then
+        print_message "Aborting...\n"
+        exit 1
+      fi
+    fi
+
+    for channel in personal business family
+    do
+      print_message "* Start syncing channel: $channel\n"
+      mhc sync $channel
+    done
+  #+END_SRC
