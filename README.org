@@ -73,10 +73,10 @@
 
     (defun mhc-summary-set-left-window ()
       (let ((left-win (mhc-summary-get-left-summary-window))
-            (last-year (mhc-date-yy- (mhc-summary-current-date-month) 1)))
-        (if left-win
+            (current-date (mhc-summary-current-date-month)))
+        (if (and left-win current-date)
             (with-selected-window left-win
-              (mhc-goto-month last-year)))))
+              (mhc-goto-month (mhc-date-yy- current-date 1))))))
 
     (add-hook 'mhc-summary-mode-hook 'mhc-summary-set-left-window)
   #+END_SRC
