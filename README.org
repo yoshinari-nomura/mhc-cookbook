@@ -24,6 +24,63 @@
 # #+LATEX_HEADER: \pagestyle{empty}
 # #+LaTeX: \thispagestyle{empty}
 
+* Reuse past event as template using Helm picker
+  On creating a new event, we frequently want to reuse the past
+  same type of event as template. This recipe would help you in such case.
+
+  1) Setup helm.
+
+  2) Put these stuffs in your .emacs:
+     #+BEGIN_SRC emacs-lisp
+       (defvar helm-source-mhc-recent-events
+         (helm-build-sync-source "Recent MHC events"
+           :candidates 'mhc-helm-recent-events
+           :migemo t
+           :action '(("Copy to Reuse" .
+                      (lambda (candidate)
+                        (mhc-reuse-copy
+                         (mhc-record-name
+                          (mhc-schedule-record candidate))))))))
+
+       (defun mhc-helm-real-to-display (date sch)
+         (let ((location (mhc-schedule-location sch)))
+           (concat
+            (mhc-date-format date "%04d/%02d/%02d" yy mm dd)
+            (format " %11s " (mhc-schedule-time-as-string sch))
+            (mhc-schedule-subject sch)
+            (if (and location (not (string= location "")))
+                (format " [%s]" location)))))
+
+       (defun mhc-helm-schedule-exist-p (sch)
+         (not (string= (mhc-record-name (mhc-schedule-record sch)) "")))
+
+       (defun mhc-helm-recent-events ()
+         (let* ((now (mhc-date-now))
+                (occurrences
+                 (nreverse
+                  ;; scan 732 days past
+                  (mhc-db-scan-flat (mhc-date- now 732) now))))
+           (delq nil
+                 (mapcar
+                  (lambda (occurrence)
+                    (let ((date (car occurrence))
+                          (sch (cdr occurrence)))
+                      (and (mhc-helm-schedule-exist-p sch)
+                           (cons (mhc-helm-real-to-display date sch) sch))))
+                  occurrences))))
+
+       (with-eval-after-load 'mhc
+         (define-key mhc-summary-mode-map "R" 'mhc-helm-select-recent-event))
+
+       (defun mhc-helm-select-recent-event ()
+         (interactive)
+         (helm-other-buffer
+          'helm-source-mhc-recent-events
+          "*Helm MHC Events*"))
+     #+END_SRC
+
+  3) Type =R= when you want to add a new event in =mhc-summary= buffer.
+
 * FullCalendar viewer for mhc
 
   In [[file:full-calendar][full-calendar]] directory:
